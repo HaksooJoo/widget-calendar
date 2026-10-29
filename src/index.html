@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Widget Calendar</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="themes.css">
+  <link rel="stylesheet" href="layouts.css">
+</head>
+<body>
+  <div class="widget" id="widget">
+    <header class="bar">
+      <div class="nav">
+        <button class="icon-btn" id="prev" title="이전" aria-label="이전">
+          <svg viewBox="0 0 16 16"><path d="M10 3 5 8l5 5"/></svg>
+        </button>
+        <h1 id="title" title="클릭하면 오늘로 이동"></h1>
+        <button class="icon-btn" id="next" title="다음" aria-label="다음">
+          <svg viewBox="0 0 16 16"><path d="m6 3 5 5-5 5"/></svg>
+        </button>
+        <button class="today-btn" id="today">오늘</button>
+      </div>
+      <div class="seg" id="seg" role="tablist" aria-label="보기 방식" style="--i: 2">
+        <button data-view="day" role="tab" title="일별 보기"><svg viewBox="0 0 16 16"><rect x="3" y="3" width="10" height="10" rx="2.2"/><path d="M8 6.2v3.6"/></svg><span>일</span></button>
+        <button data-view="week" role="tab" title="주별 보기"><svg viewBox="0 0 16 16"><path d="M3 4.5v7M5.75 4.5v7M8.5 4.5v7M11.25 4.5v7M14 4.5v7" transform="translate(-0.5 0)"/></svg><span>주</span></button>
+        <button data-view="month" role="tab" title="월별 보기"><svg viewBox="0 0 16 16"><path d="M3 3h10v10H3zM3 6.4h10M3 9.6h10M6.3 3v10M9.7 3v10"/></svg><span>월</span></button>
+      </div>
+      <div class="tools">
+        <button class="icon-btn" id="btn-menu" title="메뉴" aria-label="메뉴" aria-haspopup="true">
+          <svg viewBox="0 0 16 16"><path d="M2.5 4.5h11M2.5 8h11M2.5 11.5h11"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <div class="stage">
+      <aside class="panel hero" id="hero" hidden></aside>
+      <div class="cal">
+        <div class="dow" id="dow"></div>
+        <main class="grid month" id="grid"></main>
+      </div>
+      <aside class="panel agenda" id="agenda" hidden></aside>
+    </div>
+    <section class="strip" id="strip" hidden></section>
+
+    <nav class="menu" id="menu" hidden>
+      <button id="mi-move"><span>위치·크기 바꾸기</span><span class="state" id="mi-move-state">고정됨</span></button>
+      <button id="mi-theme"><span>테마</span><span class="state" id="mi-theme-state"></span></button>
+      <button id="mi-panel" role="switch" aria-checked="true"><span>오늘 일정 패널</span><span class="switch" aria-hidden="true"></span></button>
+      <button id="mi-settings"><span>설정</span></button>
+      <hr>
+      <button id="mi-hide"><span>트레이로 숨기기</span></button>
+      <button id="mi-quit"><span>종료</span></button>
+    </nav>
+
+    <div class="movelayer" id="movelayer" hidden data-tauri-drag-region>
+      <div class="mbox" data-tauri-drag-region>
+        <b data-tauri-drag-region>이동 모드</b>
+        <span data-tauri-drag-region>아무 곳이나 끌어서 위치를 옮기고,<br data-tauri-drag-region>가장자리를 끌면 크기를 바꿀 수 있습니다.</span>
+        <button class="btn primary" id="move-done">완료 · 고정하기</button>
+      </div>
+    </div>
+
+    <div class="modal" id="modal" hidden></div>
+
+    <div class="dayov" id="dayov" hidden><div class="dvcard dayview" id="dayview"></div></div>
+
+    <div class="ympop" id="ympop" hidden role="dialog" aria-label="연도·월 선택">
+      <div class="ym-head">
+        <button class="icon-btn" id="ym-prev" type="button" aria-label="이전 해"><svg viewBox="0 0 16 16"><path d="M10 3 5 8l5 5"/></svg></button>
+        <label class="ym-year"><input id="ym-year" type="number" min="1900" max="2100" inputmode="numeric" aria-label="연도"><span>년</span></label>
+        <button class="icon-btn" id="ym-next" type="button" aria-label="다음 해"><svg viewBox="0 0 16 16"><path d="m6 3 5 5-5 5"/></svg></button>
+      </div>
+      <div class="ym-grid" id="ym-grid"></div>
+      <div class="ym-foot"><button class="btn" id="ym-today" type="button">오늘로 이동</button></div>
+    </div>
+  </div>
+
+  <script type="module" src="main.js"></script>
+</body>
+</html>

@@ -1,0 +1,5 @@
+{
+  "_안내": "Google Cloud Console에서 만든 'OAuth 클라이언트 ID(데스크톱 앱)'의 값을 아래에 넣고 다시 빌드하세요. 자세한 방법은 README의 'Google 로그인 설정'을 보세요. 이 파일의 값은 앱(exe)에 포함되므로 외부에 공개하는 저장소에는 올리지 마세요.",
+  "clientId": "",
+  "clientSecret": ""
+}

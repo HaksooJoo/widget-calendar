@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <title>일정 알림</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="themes.css">
+  <link rel="stylesheet" href="layouts.css">
+</head>
+<body>
+  <div class="toast" id="toast" role="alert">
+    <div class="tbar"></div>
+    <div class="tbody">
+      <div class="tkicker">
+        <svg viewBox="0 0 16 16"><path d="M8 2.2a3.8 3.8 0 0 0-3.8 3.8c0 3.2-1.4 4-1.4 4h10.4s-1.4-.8-1.4-4A3.8 3.8 0 0 0 8 2.2ZM6.6 12.6a1.5 1.5 0 0 0 2.8 0"/></svg>
+        <span>일정 알림</span>
+      </div>
+      <div class="tt" id="tt"></div>
+      <div class="tm" id="tm"></div>
+    </div>
+    <button class="tclose" id="tclose" aria-label="닫기"><svg viewBox="0 0 16 16"><path d="m4 4 8 8M12 4l-8 8"/></svg></button>
+    <div class="tprog" id="tprog"></div>
+  </div>
+  <script type="module" src="toast.js"></script>
+</body>
+</html>

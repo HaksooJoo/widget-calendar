@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Widget Calendar 설정</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="themes.css">
+  <link rel="stylesheet" href="layouts.css">
+</head>
+<body class="solid scrollable">
+  <div class="settings">
+    <h1>설정</h1>
+    <p class="notice">아래 설정값(투명도, 보기, 알림, 자동 동기화 주기 등)은 <b>[저장]</b>을 눌러야 적용됩니다. 저장하지 않고 닫으면 이전 값 그대로입니다.
+      계정 연결·삭제, 동기화, 백업 실행, 알림 테스트는 누르는 즉시 실행됩니다.</p>
+
+    <section class="card">
+      <h2>일반</h2>
+      <div class="item-row">
+        <div class="lbl"><span>위젯 투명도</span><span id="opacity-val"></span></div>
+        <input type="range" id="opacity" min="20" max="100" step="1">
+      </div>
+      <div class="item-row">
+        <div class="lbl"><span>월별 보기</span></div>
+        <label class="radio"><input type="radio" name="monthMode" value="month">
+          <span>현재 달 기준<small>이번 달 전체를 보여줍니다</small></span></label>
+        <label class="radio"><input type="radio" name="monthMode" value="rolling">
+          <span>오늘 기준 위아래 2주<small>오늘이 있는 주의 앞뒤 2주씩, 5주를 보여줍니다</small></span></label>
+      </div>
+      <div class="item-row">
+        <div class="lbl"><span>한 주의 시작 요일</span></div>
+        <label class="radio"><input type="radio" name="weekStart" value="0"><span>일요일</span></label>
+        <label class="radio"><input type="radio" name="weekStart" value="1"><span>월요일</span></label>
+      </div>
+      <div class="item-row">
+        <label class="radio"><input type="checkbox" id="autostart">
+          <span>윈도우를 켜면 자동으로 실행<small>알림을 받으려면 위젯이 실행 중이어야 하므로 켜 두는 것을 권장합니다</small></span></label>
+        <label class="radio"><input type="checkbox" id="notify">
+          <span>일정 알림 사용<small>일정에 설정한 시간이 되면 윈도우 알림으로 알려줍니다</small></span></label>
+        <div class="inline">
+          <label class="inline-label" for="notify-style">알림 표시 방식</label>
+          <select id="notify-style">
+            <option value="popup">화면 오른쪽 위 팝업 창</option>
+            <option value="windows">윈도우 기본 알림</option>
+          </select>
+          <button class="btn" id="btn-test-notify">알림 테스트</button>
+        </div>
+        <div class="note" id="notify-msg"></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>글자와 바탕</h2>
+      <div class="item-row">
+        <div class="lbl"><span>글자 크기</span><span id="fs-val"></span></div>
+        <input type="range" id="font-scale" min="80" max="160" step="5">
+      </div>
+      <div class="item-row">
+        <div class="lbl"><span>글꼴</span></div>
+        <div class="inline">
+          <select id="font-select"></select>
+          <input type="text" id="font-custom" placeholder="글꼴 이름 입력 (예: Pretendard)" hidden>
+        </div>
+        <div class="font-sample" id="font-sample">가나다라 ABC abc 123 · 음력 윤6.17 · 어버이날</div>
+        <div class="note">목록에는 이 PC에 설치된 글꼴만 나옵니다. 목록에 없는 글꼴은 "직접 입력"에 이름을 적으세요. 글꼴이 없으면 기본 글꼴로 표시됩니다.</div>
+      </div>
+      <div class="item-row">
+        <div class="lbl"><span>칸·일정 바탕 진하기</span><span id="surface-val"></span></div>
+        <input type="range" id="surface" min="0" max="100" step="5">
+        <div class="note">낮출수록 날짜 칸과 일정의 바탕색이 옅어져 위젯이 한 면처럼 보입니다. 0%면 바탕 없이 글자와 선만 남습니다.</div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>달력 표시</h2>
+      <div class="item-row">
+        <label class="radio"><input type="checkbox" id="show-holidays">
+          <span>공휴일 표시<small>설날·추석·삼일절 등 국가공휴일과 대체공휴일, 선거일을 빨갛게 표시합니다</small></span></label>
+        <label class="radio"><input type="checkbox" id="show-special">
+          <span>기념일·24절기 표시<small>어버이날·스승의 날 같은 기념일, 입춘·동지 같은 절기, 삼복·한식·정월대보름 등</small></span></label>
+        <label class="radio"><input type="checkbox" id="show-lunar">
+          <span>음력 표시 (윤달 포함)<small>양력 숫자 옆에 음력 날짜를 작게 표시합니다. 윤달은 "윤6.17"처럼 "윤"이 붙고, 음력 초하루는 강조됩니다</small></span></label>
+        <label class="radio"><input type="checkbox" id="show-panel">
+          <span>오늘 일정 패널 표시<small>오늘 일정·다가오는 일정·카드 줄처럼 일부 테마에 있는 패널을 보이거나 숨깁니다(메뉴에서도 바로 켜고 끌 수 있음). 패널이 없는 테마에서는 아무 변화가 없습니다</small></span></label>
+      </div>
+      <div class="inline"><button class="btn" id="btn-open-data">설정 폴더 열기</button></div>
+      <p class="hint small">공휴일·음력은 앱에 내장된 표(양력 1900-01-31 ~ 2050-12-31)로 계산하므로 인터넷이 필요 없습니다. 정부가 새로 지정하는 <b>임시공휴일</b>은 미리 알 수 없으므로, 설정 폴더의 <code>holidays_custom.json</code>에
+        <code>[{"date": "2026-12-31", "name": "임시공휴일"}]</code> 처럼 적어 두면 표시됩니다(<code>"off": false</code>를 붙이면 쉬는 날이 아닌 기념일로 표시). 앱을 다시 켜면 반영됩니다.</p>
+    </section>
+
+    <section class="card">
+      <h2>캘린더 동기화</h2>
+      <p class="hint">연결한 캘린더의 일정이 위젯에 함께 표시됩니다. Google·네이버(CalDAV)는 양방향, ICS 구독은 읽기 전용입니다.</p>
+      <div id="accounts"></div>
+      <div class="add-row">
+        <button class="btn" data-add="google">Google</button>
+        <button class="btn" data-add="naver">네이버</button>
+        <button class="btn" data-add="caldav">CalDAV</button>
+        <button class="btn" data-add="ics">ICS 주소</button>
+      </div>
+      <div id="addform"></div>
+      <div class="item-row">
+        <div class="inline">
+          <label class="inline-label" for="sync-minutes">자동 동기화</label>
+          <select id="sync-minutes">
+            <option value="0">사용 안 함</option>
+            <option value="5">5분마다</option>
+            <option value="15">15분마다</option>
+            <option value="30">30분마다</option>
+            <option value="60">1시간마다</option>
+          </select>
+          <button class="btn" id="btn-sync-all">지금 모두 동기화</button>
+        </div>
+        <div class="note" id="sync-msg"></div>
+      </div>
+      <details class="help">
+        <summary>삼성 캘린더는 어떻게 연결하나요?</summary>
+        <p>삼성 캘린더는 외부 프로그램이 직접 접근할 수 있는 공개 API가 없습니다. 휴대폰의 삼성 캘린더 설정에서 <b>Google 계정과 동기화</b>를 켜 두면 같은 일정이 Google 캘린더에 올라가므로, 위의 <b>Google</b>로 연결하면 삼성 캘린더 일정도 함께 보입니다.</p>
+        <p>그 밖에 Outlook·iCloud 같은 서비스도 'ICS 주소(비공개 iCal 주소)' 또는 CalDAV로 연결할 수 있습니다.</p>
+      </details>
+    </section>
+
+    <section class="card">
+      <h2>백업</h2>
+      <p class="hint">동기화 계정을 연결하지 않았을 때, 일정을 바꿀 때마다 문서 폴더에 자동으로 백업합니다.</p>
+      <div class="item-row">
+        <label class="radio"><input type="checkbox" id="backup-enabled">
+          <span>자동 백업 사용<small id="backup-state"></small></span></label>
+      </div>
+      <div class="kv"><span>백업 폴더</span><code id="backup-dir"></code></div>
+      <div class="kv"><span>마지막 백업</span><span id="backup-last"></span></div>
+      <div class="inline">
+        <button class="btn" id="btn-backup">지금 백업</button>
+        <button class="btn" id="btn-open-backup">폴더 열기</button>
+        <button class="btn" id="btn-restore">백업에서 복원</button>
+      </div>
+      <div class="note" id="backup-msg"></div>
+      <p class="hint small">백업 폴더에는 복원용 <code>calendar-backup.json</code>, 다른 캘린더 앱으로 옮길 수 있는 <code>calendar.ics</code>, 최근 14일치 날짜별 사본이 저장됩니다.</p>
+    </section>
+    <p class="hint small app-version" id="app-version"></p>
+  <div class="savebar">
+      <span class="dirty" id="dirty">변경 사항 없음</span>
+      <button class="btn" id="btn-cancel">취소</button>
+      <button class="btn primary" id="btn-save" disabled>저장</button>
+    </div>
+  </div>
+  <script type="module" src="settings.js"></script>
+</body>
+</html>

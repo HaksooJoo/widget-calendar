@@ -1,0 +1,18 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "위젯(main), 상세(detail), 설정(settings), 알림 팝업(toast-*) 창에 허용할 권한",
+  "windows": [
+    "main",
+    "detail",
+    "settings",
+    "toast-*"
+  ],
+  "permissions": [
+    "core:default",
+    "core:window:allow-start-dragging",
+    "core:window:allow-close",
+    "window-state:default",
+    "notification:default"
+  ]
+}

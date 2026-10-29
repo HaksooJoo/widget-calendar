@@ -1,0 +1,396 @@
+/* ───────── 구조 ─────────
+   배경(색 + 테마 그림)은 ::before 한 장이며, 투명도(--alpha)가 이 장 전체에 적용된다. */
+.widget { isolation: isolate; }
+.widget::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: var(--bg-art, none), var(--panel);
+  background-size: var(--bg-size, cover);
+  background-position: var(--bg-pos, center);
+  background-repeat: var(--bg-repeat, repeat);
+  opacity: var(--alpha);
+}
+.bar h1 { font-family: var(--font-display, inherit); }
+.num { font-family: var(--font-display, inherit); }
+
+.stage { flex: 1; min-height: 0; display: flex; gap: 10px; }
+.cal { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+
+/* ───────── 보조 패널: 왼쪽 큰 날짜 / 오른쪽 다가오는 일정 / 아래 카드 줄 ───────── */
+.panel { display: flex; flex-direction: column; min-height: 0; padding: 12px; border-radius: 12px; background: color-mix(in srgb, var(--ink) calc(var(--sk, 0.5) * 10%), color-mix(in srgb, var(--panel) calc(min(1, var(--sk, 0.5) * 2) * 66%), transparent)); overflow: hidden; }
+.panel.hero { flex: none; width: clamp(140px, 27%, 190px); }
+.panel.agenda { flex: none; width: clamp(150px, 30%, 230px); }
+.panel h3 { margin: 0 0 8px; font-size: 12px; font-weight: 600; color: var(--muted); }
+.hero-day { font-size: 64px; line-height: 1; font-weight: 700; letter-spacing: -0.04em; font-variant-numeric: tabular-nums; }
+.hero-dow { margin-top: 6px; font-size: 15px; font-weight: 600; }
+.hero-month { margin-bottom: 12px; font-size: 12px; color: var(--muted); }
+.plist { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 6px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--line) transparent; }
+.pitem { flex: none; padding: 6px 8px; border-left: 3px solid var(--c); border-radius: 6px; background: color-mix(in srgb, var(--c) 20%, transparent); font-size: 12px; line-height: 1.35; }
+.pitem .pt { font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.pitem .pn { font-weight: 600; overflow-wrap: anywhere; }
+.pgroup { margin: 6px 0 0; font-size: 11px; font-weight: 600; color: var(--muted); }
+.pempty { font-size: 12px; line-height: 1.5; color: var(--muted); }
+.strip { flex: none; display: flex; gap: 8px; margin-top: 8px; overflow-x: auto; scrollbar-width: none; }
+.scard { flex: 0 0 auto; min-width: 140px; max-width: 200px; padding: 8px 12px; border-left: 4px solid var(--c); border-radius: 12px; background: color-mix(in srgb, var(--c) calc(var(--sk, 0.5) * 32%), color-mix(in srgb, var(--panel) calc(min(1, var(--sk, 0.5) * 2) * 66%), transparent)); font-size: 12px; }
+.scard .sd { font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.scard .sn { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+@media (max-width: 520px) { .panel.hero, .panel.agenda { display: none; } }
+
+/* ───────── 헤더 7종 ───────── */
+/* journal: 큰 월 제목을 왼쪽에 */
+:where(html[data-hdr='journal']) .bar { height: 58px; align-items: flex-end; padding-bottom: 6px; }
+:where(html[data-hdr='journal']) .bar h1 { order: -1; margin: 0 12px 0 4px; min-width: 0; text-align: left; font-size: 30px; font-weight: 700; letter-spacing: -0.03em; }
+@media (max-width: 520px) { :where(html[data-hdr='journal']) .bar h1 { font-size: 22px; } }
+@media (max-width: 440px) { :where(html[data-hdr='journal']) .bar h1 { margin-right: 2px; font-size: 18px; } }
+/* centered: 보기 전환 · 제목 · 메뉴를 3등분 */
+:where(html[data-hdr='centered']) .bar { display: grid; grid-template-columns: 1fr auto 1fr; }
+:where(html[data-hdr='centered']) .seg { grid-column: 1; grid-row: 1; justify-self: start; }
+:where(html[data-hdr='centered']) .bar .nav { grid-column: 2; grid-row: 1; }
+:where(html[data-hdr='centered']) .tools { grid-column: 3; grid-row: 1; justify-self: end; }
+/* minimal: 선 하나, 글자만 있는 버튼 */
+:where(html[data-hdr='minimal']) .bar { height: 36px; margin-bottom: 6px; border-bottom: 1px solid var(--line); }
+:where(html[data-hdr='minimal']) .bar h1 { min-width: 0; margin: 0 8px; font-size: 15px; font-weight: 500; letter-spacing: 0.02em; }
+:where(html[data-hdr='minimal']) .bar .today-btn, :where(html[data-hdr='minimal']) .bar .icon-btn { border-color: transparent; background: none; }
+:where(html[data-hdr='minimal']) .seg { padding: 0; gap: 2px; background: none; }
+:where(html[data-hdr='minimal']) .seg button { border-radius: 0; border-bottom: 2px solid transparent; background: none; color: var(--muted); }
+:where(html[data-hdr='minimal']) .seg button.on { border-bottom-color: var(--ink); background: none; color: var(--ink); }
+/* bottom: 조작 막대를 아래로 */
+:where(html[data-hdr='bottom']) .bar { order: 3; height: 44px; margin-top: 8px; padding: 0 10px; border-radius: 14px; background: var(--cell-hover); }
+:where(html[data-hdr='bottom']) .bar h1 { min-width: 96px; font-size: 15px; }
+/* pill: 둥둥 뜬 알약 막대 */
+:where(html[data-hdr='pill']) .bar { height: 44px; margin: 2px 2px 8px; padding: 0 12px; border: 1px solid var(--line); border-radius: 999px; background: var(--cell-hover); }
+:where(html[data-hdr='pill']) .bar h1 { min-width: 100px; font-size: 15px; }
+/* stack: 제목 줄 + 전체 너비 보기 전환 */
+:where(html[data-hdr='stack']) .bar { flex-wrap: wrap; height: auto; row-gap: 6px; padding-bottom: 8px; }
+:where(html[data-hdr='stack']) .bar .nav { flex: 1 1 100%; order: 0; }
+:where(html[data-hdr='stack']) .bar h1 { order: -1; flex: 1; margin: 0 6px; min-width: 0; text-align: left; font-size: 21px; font-weight: 700; }
+:where(html[data-hdr='stack']) .seg { flex: 1; order: 1; }
+:where(html[data-hdr='stack']) .seg button { flex: 1; }
+:where(html[data-hdr='stack']) .tools { order: 2; }
+/* rail: 왼쪽 세로 막대, 제목은 세로쓰기 */
+:where(html[data-hdr='rail']) .widget { flex-direction: row; gap: 10px; }
+:where(html[data-hdr='rail']) .bar { order: -1; flex-direction: column; justify-content: space-between; width: 58px; height: auto; padding: 8px 0; border-radius: 12px; background: var(--cell); }
+:where(html[data-hdr='rail']) .bar .nav { flex-direction: column; gap: 4px; }
+:where(html[data-hdr='rail']) .bar h1 { writing-mode: vertical-rl; min-width: 0; margin: 8px 0; font-size: 17px; letter-spacing: 0.1em; }
+:where(html[data-hdr='rail']) .today-btn { margin: 4px 0 0; padding: 0 6px; }
+:where(html[data-hdr='rail']) .seg { flex-direction: column; }
+:where(html[data-hdr='rail']) .seg button { width: 36px; }
+:where(html[data-hdr='rail']) .menu { top: 54px; left: 70px; right: auto; }
+
+/* ───────── 날짜 칸 6종(월 보기) ───────── */
+:where(html[data-grid='tight']) .grid.month { gap: 2px; }
+:where(html[data-grid='tight']) .cell { padding: 2px 3px; border-radius: 6px; }
+:where(html[data-grid='soft']) .grid.month { gap: 5px; }
+:where(html[data-grid='soft']) .cell { padding: 5px 5px 3px; border-radius: 13px; }
+:where(html[data-grid='bubble']) .grid.month { gap: 7px; }
+:where(html[data-grid='bubble']) .cell { padding: 7px 7px 4px; border-radius: 20px; background: var(--cell-hover); }
+:where(html[data-grid='ruled']) .grid.month { gap: 0; }
+:where(html[data-grid='ruled']) .cell { padding: 4px 5px 2px; border-top: 1px solid var(--line); border-radius: 0; background: transparent; }
+:where(html[data-grid='ruled']) .dow { padding-bottom: 6px; margin-bottom: 2px; border-bottom: 2px solid var(--accent); }
+:where(html[data-grid='table']) .grid.month { gap: 0; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+:where(html[data-grid='table']) .cell { border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); border-radius: 0; background: transparent; }
+:where(html[data-grid='table']) .cell:nth-child(7n) { border-right: 0; }
+:where(html[data-grid='table']) .cell:nth-last-child(-n + 7) { border-bottom: 0; }
+:where(html[data-grid='table']) .dow { gap: 0; padding: 6px 0; border-radius: 6px 6px 0 0; background: var(--cell-hover); }
+html[data-wk='on'] .grid.month, html[data-wk='on'] .dow { grid-template-columns: 24px repeat(7, minmax(0, 1fr)); }
+.wk { display: grid; justify-items: center; align-items: start; padding-top: 7px; font-size: 10px; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+/* ───────── 날짜 숫자 3종 ───────── */
+:where(html[data-num='right']) .cell .num { align-self: flex-end; width: auto; padding: 0 4px; }
+html[data-num='right'] .cell.today .num { width: 22px; padding: 0; margin-right: 2px; }
+:where(html[data-num='circle']) .cell .num { display: grid; place-items: center; width: 24px; height: 24px; padding: 0; border-radius: 50%; background: var(--cell-hover); }
+html[data-num='circle'] .cell.today .num { width: 24px; height: 24px; background: var(--accent); }
+html[data-num='circle'] .cell.dim .num { background: transparent; }
+
+/* ───────── 일정 표시 6종 ───────── */
+/* 일정 칩은 배경색 위에 얹어서(투명도와 무관하게) 글자가 항상 읽히게 한다. */
+.chip { background: color-mix(in srgb, var(--c) calc(var(--sk, 0.5) * 48%), color-mix(in srgb, var(--panel) calc(min(1, var(--sk, 0.5) * 2) * 64%), transparent)); }
+.tev { background-color: color-mix(in srgb, var(--c) calc(var(--sk, 0.5) * 72%), color-mix(in srgb, var(--panel) calc(min(1, var(--sk, 0.5) * 2) * 64%), transparent)); }
+.pitem { background: color-mix(in srgb, var(--c) calc(var(--sk, 0.5) * 44%), color-mix(in srgb, var(--panel) calc(min(1, var(--sk, 0.5) * 2) * 66%), transparent)); }
+
+:where(html[data-chip='dot']) .chip { gap: 5px; padding: 0 2px; border-left: 0; background: none; }
+:where(html[data-chip='dot']) .chip::before { content: ''; flex: none; width: 7px; height: 7px; border-radius: 50%; background: var(--c); }
+:where(html[data-chip='dot']) .chip.cont::before { background: transparent; box-shadow: inset 0 0 0 2px var(--c); }
+:where(html[data-chip='pill']) .chip { padding: 0 9px; border-left: 0; border-radius: 999px; background: color-mix(in srgb, var(--c) calc(var(--sk, 0.5) * 72%), color-mix(in srgb, var(--panel) calc(min(1, var(--sk, 0.5) * 2) * 64%), transparent)); }
+:where(html[data-chip='text']) .chip { padding-left: 5px; border-left: 2px solid var(--c); border-radius: 0; background: none; }
+:where(html[data-chip='underline']) .chip { padding: 0 1px; border-left: 0; border-bottom: 2px solid var(--c); border-radius: 0; background: none; }
+:where(html[data-chip='glow']) .chip { box-shadow: 0 0 10px color-mix(in srgb, var(--c) 45%, transparent); }
+
+/* ───────── 메뉴 · 테마 선택 · 이동 모드 ───────── */
+.tools .icon-btn svg { width: 18px; height: 18px; }
+.menu { position: absolute; top: 46px; right: 10px; z-index: 25; min-width: 210px; padding: 6px; border: 1px solid var(--line); border-radius: 12px; background: color-mix(in srgb, var(--panel) 96%, #fff); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35); }
+:where(html[data-hdr='bottom']) .menu { top: auto; bottom: 58px; }
+.menu button { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; padding: 8px 10px; border-radius: 8px; font-size: 13px; text-align: left; }
+.menu button:hover { background: var(--cell-hover); }
+.menu hr { margin: 4px 2px; border: 0; border-top: 1px solid var(--line); }
+.menu .state { font-size: 11px; color: var(--muted); }
+.menu .on .state { color: var(--accent); font-weight: 600; }
+.theme-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(132px, 1fr)); gap: 8px; margin-bottom: 4px; }
+.tcard { display: flex; flex-direction: column; gap: 3px; padding: 9px 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--tp); color: var(--ti); text-align: left; }
+.tcard:hover { outline: 2px solid var(--ta); outline-offset: 1px; }
+.tcard.cur { outline: 2px solid var(--ta); outline-offset: 1px; }
+.tcard b { font-size: 13px; }
+.tcard small { font-size: 11px; color: var(--tm); }
+.tcard .dots { display: flex; gap: 4px; margin-bottom: 2px; }
+.tcard .dots i { width: 12px; height: 12px; border-radius: 50%; }
+.sheet.wide { width: min(560px, 96%); }
+.sheet .foot-row { display: flex; justify-content: flex-end; margin-top: 10px; }
+
+.movelayer { position: absolute; inset: 0; z-index: 40; display: grid; place-items: center; border-radius: inherit; outline: 2px dashed var(--accent); outline-offset: -5px; background: color-mix(in srgb, var(--accent) 14%, transparent); cursor: move; }
+.movelayer .mbox { display: flex; flex-direction: column; align-items: center; gap: 8px; max-width: 86%; padding: 16px 22px; border: 1px solid var(--line); border-radius: 14px; background: color-mix(in srgb, var(--panel) 94%, #000); font-size: 13px; line-height: 1.5; text-align: center; }
+.movelayer .mbox b { font-size: 15px; }
+.movelayer .mbox span { color: var(--muted); }
+
+/* ───────── 알림 팝업 창 ───────── */
+.toast { position: fixed; inset: 6px; display: flex; align-items: stretch; overflow: hidden; border: 1px solid var(--line); border-radius: 14px; background: var(--panel); box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35); cursor: pointer; animation: toast-in 0.3s ease-out; }
+.toast .tbar { flex: none; width: 7px; background: var(--c); }
+.toast .tbody { flex: 1; min-width: 0; padding: 12px 40px 12px 14px; }
+.toast .tkicker { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--muted); }
+.toast .tkicker svg { width: 13px; height: 13px; fill: none; stroke: var(--c); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.toast .tt { margin-top: 4px; font-size: 16px; font-weight: 700; line-height: 1.3; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.toast .tm { margin-top: 3px; font-size: 13px; line-height: 1.4; color: var(--muted); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.toast .tclose { position: absolute; top: 8px; right: 8px; width: 26px; height: 26px; border-radius: 8px; color: var(--muted); }
+.toast .tclose:hover { background: var(--cell-hover); color: var(--ink); }
+.toast .tclose svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+.toast .tprog { position: absolute; left: 7px; right: 0; bottom: 0; height: 3px; background: var(--c); transform-origin: left; opacity: 0.75; }
+@keyframes toast-in { from { opacity: 0; transform: translateX(28px); } to { opacity: 1; transform: none; } }
+
+/* ───────── 설정 창: 저장/취소 막대 ───────── */
+.savebar { position: sticky; bottom: 0; z-index: 5; display: flex; align-items: center; justify-content: flex-end; gap: 8px; margin: 0 -22px -40px; padding: 12px 22px; border-top: 1px solid var(--line); background: var(--panel); }
+.savebar .dirty { margin-right: auto; font-size: 12px; color: var(--muted); }
+.savebar .dirty.on { color: var(--accent); font-weight: 600; }
+.notice { margin: 0 0 14px; padding: 10px 12px; border-radius: 10px; background: var(--cell-hover); font-size: 12px; line-height: 1.55; color: var(--muted); }
+
+/* ───────── 글자 가독성 ─────────
+   위젯을 투명하게 해도 글자가 바탕화면에 묻히지 않도록, 글자 뒤에 테마 배경색 후광을 깐다.
+   (칠해진 칩·버튼·메뉴는 자체 배경이 있으므로 제외) */
+:root { --ink2: color-mix(in srgb, var(--ink) 92%, var(--panel)); --halo-c: color-mix(in srgb, var(--panel) var(--halo-pct, 0%), transparent); --halo: 0 0 1px var(--halo-c), 0 0 2px var(--halo-c), 0 0 3px var(--halo-c), 0 0 5px var(--halo-c), 0 0 8px var(--halo-c), 0 0 12px var(--halo-c); }
+.widget { text-shadow: var(--halo); }
+.chip, .tev, .pitem, .scard, .menu, .sheet, .movelayer, .seg button.on, .cell.today .num, .dh.today .dn, .btn.primary, .tcard { text-shadow: none; }
+html[data-chip='dot'] .chip, html[data-chip='text'] .chip, html[data-chip='underline'] .chip { text-shadow: var(--halo); }
+.chip .t, .tev .tm, .pitem .pt, .scard .sd { color: var(--ink2); }
+/* 버튼은 브라우저 기본값이 후광을 지우므로 부모 값을 물려받게 한다 */
+.widget button { text-shadow: inherit; }
+.chip, .seg button.on, .btn.primary, .menu button, .tcard { text-shadow: none; }
+
+/* ───────── 음력 · 공휴일·기념일·절기 표시 ───────── */
+.cell { position: relative; }
+.nrow { display: flex; align-items: center; gap: 4px; flex: none; min-height: 20px; margin-bottom: 5px; }
+.nrow .num { margin-bottom: 0; }
+.lunar { font-size: 10px; line-height: 1; color: var(--muted); font-variant-numeric: tabular-nums; pointer-events: none; white-space: nowrap; }
+.lunar.first { color: var(--ink); font-weight: 700; text-decoration: underline; text-decoration-color: var(--accent); text-decoration-thickness: 2px; text-underline-offset: 2px; }
+.lunar.leap { font-style: italic; }
+html[data-num='right'] .nrow { align-self: flex-end; flex-direction: row-reverse; }
+html[data-num='right'] .nrow .num { align-self: auto; }
+.cell.dim .lunar { opacity: 0.4; }
+.dh-top .lunar { margin: 0 0 0 2px; }
+
+.hday { display: block; height: 16px; margin-bottom: 2px; padding: 0 3px; overflow: hidden; font-size: 11px; line-height: 16px; white-space: nowrap; text-overflow: ellipsis; color: var(--ink2); }
+.hday::before { content: ''; display: inline-block; width: 5px; height: 5px; margin: 0 4px 1px 0; border-radius: 50%; background: currentColor; vertical-align: middle; }
+.hday.off { font-weight: 700; color: var(--sun); }
+.hday.term { color: var(--muted); }
+.hday.term::before { border-radius: 1px; transform: rotate(45deg); }
+/* 공휴일 날짜 숫자는 일요일처럼 빨갛게 (오늘 표시는 그대로) */
+.cell.hol:not(.today) .num { color: var(--sun); }
+.dh.hol:not(.today) .dw, .dh.hol:not(.today) .dn { color: var(--sun); }
+.hero-sub { margin: -8px 0 12px; font-size: 11px; line-height: 1.45; color: var(--muted); }
+.titlebox { min-width: 0; }
+.titlebox .sub { margin-top: 3px; font-size: 12px; color: var(--muted); }
+.titlebox .sub .off { font-weight: 700; color: var(--sun); }
+
+/* ───────── 오늘: 날짜 칸 전체에 효과 ───────── */
+@keyframes today-glow { 0%, 100% { opacity: 0.35; } 50% { opacity: 1; } }
+.cell.today, .dh.today {
+  position: relative;
+  z-index: 2;
+  background: linear-gradient(160deg, color-mix(in srgb, var(--accent) 24%, var(--cell)), color-mix(in srgb, var(--accent) 9%, var(--cell)));
+  box-shadow: inset 0 0 0 2px var(--accent);
+}
+/* 빛 번짐은 고정된 그림자를 가진 별도 층의 '투명도'만 바꿔서 표현한다(그림자 자체를 움직이면 매 프레임 다시 그려 부하가 크다). */
+.cell.today::after, .dh.today::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  box-shadow: 0 0 16px color-mix(in srgb, var(--accent) 60%, transparent);
+  opacity: 0.35;
+  pointer-events: none;
+  animation: today-glow 3.4s ease-in-out infinite;
+}
+.col.today { box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--accent) 75%, transparent); background-color: color-mix(in srgb, var(--accent) 10%, var(--cell)); }
+/* 줄 노트·표 모양에서는 테두리 대신 띠/윤곽선으로 */
+html[data-grid='ruled'] .cell.today { background: linear-gradient(90deg, color-mix(in srgb, var(--accent) 26%, transparent), color-mix(in srgb, var(--accent) 7%, transparent)); box-shadow: inset 4px 0 0 var(--accent), inset 0 0 0 1px color-mix(in srgb, var(--accent) 55%, transparent); }
+html[data-grid='ruled'] .cell.today::after, html[data-grid='table'] .cell.today::after { display: none; }
+html[data-grid='table'] .cell.today { background: color-mix(in srgb, var(--accent) 18%, transparent); box-shadow: none; outline: 2px solid var(--accent); outline-offset: -2px; }
+@media (prefers-reduced-motion: reduce) { .cell.today::after, .dh.today::after { animation: none; opacity: 0.7; } .seg::before { transition: none; } }
+
+/* ───────── 일·주·월 전환 버튼 ───────── */
+.seg { position: relative; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; padding: 3px; border-radius: 13px; background: color-mix(in srgb, var(--ink) 7%, transparent); box-shadow: inset 0 0 0 1px var(--line), inset 0 1px 4px rgba(0, 0, 0, 0.16); }
+.seg::before { content: ''; position: absolute; top: 3px; bottom: 3px; left: 3px; width: calc((100% - 6px) / 3); border-radius: 10px; background: linear-gradient(180deg, var(--accent), color-mix(in srgb, var(--accent) 88%, #000)); box-shadow: 0 2px 8px color-mix(in srgb, var(--accent) 42%, transparent), inset 0 1px 0 rgba(255, 255, 255, 0.38); transform: translateX(calc(var(--i, 2) * 100%)); transition: transform 0.3s cubic-bezier(0.3, 1.35, 0.5, 1); }
+.seg button { position: relative; z-index: 1; display: flex; align-items: center; justify-content: center; gap: 5px; height: 28px; padding: 0 12px; border-radius: 10px; background: none; font-size: 12.5px; font-weight: 600; letter-spacing: 0.02em; color: var(--muted); transition: color 0.2s; }
+.seg button:hover { color: var(--ink); }
+.seg button.on { background: none; color: var(--on-accent); }
+.seg button svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+@media (max-width: 440px) { .seg button svg { display: none; } .seg button { padding: 0 9px; } }
+html[data-hdr='minimal'] .seg { padding: 0; border-radius: 0; background: none; box-shadow: none; }
+html[data-hdr='minimal'] .seg::before { top: auto; bottom: 0; left: 0; height: 2px; width: calc(100% / 3); border-radius: 0; background: var(--ink); box-shadow: none; }
+html[data-hdr='minimal'] .seg button, html[data-hdr='minimal'] .seg button.on { border-radius: 0; border-bottom: 0; background: none; }
+html[data-hdr='minimal'] .seg button.on { color: var(--ink); }
+html[data-hdr='rail'] .seg { grid-template-columns: 1fr; grid-template-rows: repeat(3, 1fr); }
+html[data-hdr='rail'] .seg::before { bottom: auto; width: calc(100% - 6px); height: calc((100% - 6px) / 3); transform: translateY(calc(var(--i, 2) * 100%)); }
+html[data-hdr='rail'] .seg button { width: 36px; padding: 0; }
+html[data-hdr='rail'] .seg button svg { display: none; }
+html[data-theme='lavender'] .seg, html[data-theme='lavender'] .seg::before, html[data-theme='lavender'] .seg button,
+html[data-theme='sakura'] .seg, html[data-theme='sakura'] .seg::before, html[data-theme='sakura'] .seg button { border-radius: 999px; }
+html[data-theme='hanji'] .seg, html[data-theme='hanji'] .seg::before, html[data-theme='hanji'] .seg button { border-radius: 4px; }
+html[data-theme='aurora'] .seg::before, html[data-theme='midnight'] .seg::before { box-shadow: 0 0 16px color-mix(in srgb, var(--accent) 65%, transparent), inset 0 1px 0 rgba(255, 255, 255, 0.3); }
+
+/* 공휴일 이름은 바탕화면이 비칠 때도 읽히도록 테마의 밝기에 맞춰 한 번 더 보정 */
+html[data-dark='1'] .hday.off { color: var(--sun); }
+html[data-dark='0'] .hday.off { color: var(--sun); }
+
+/* ───────── 글자 크기: 글자가 있는 요소를 함께 키워 줄 높이·칸 높이도 같이 커지게 한다 ───────── */
+.chip, .hday, .num, .lunar, .dow > div, .wk, .dh-top, .bar h1, .seg button, .today-btn, .icon-btn,
+.pitem, .scard, .hero-day, .hero-dow, .hero-month, .hero-sub, .panel h3, .pgroup, .pempty,
+.tev .tt, .tev .tm, .menu button, .movelayer .mbox, .sheet, .detail { zoom: var(--fs, 1); }
+.tl-gutter.hours span { font-size: calc(10px * var(--fs, 1)); }
+.toast .tkicker, .toast .tt, .toast .tm { zoom: var(--fs-toast, 1); }
+/* 막대 높이는 내용에 맞춰 늘어나게(최소 높이만 둔다) */
+html .bar { height: auto; min-height: 38px; }
+html[data-hdr='journal'] .bar { min-height: 58px; }
+html[data-hdr='minimal'] .bar { min-height: 36px; }
+html[data-hdr='bottom'] .bar, html[data-hdr='pill'] .bar { min-height: 44px; }
+html[data-hdr='rail'] .bar { width: calc(58px * var(--fs, 1)); min-height: 0; }
+.panel.hero { width: clamp(calc(140px * var(--fs, 1)), 27%, calc(190px * var(--fs, 1))); }
+.panel.agenda { width: clamp(calc(150px * var(--fs, 1)), 30%, calc(230px * var(--fs, 1))); }
+
+/* ───────── 새 레이아웃 변형 ───────── */
+/* airy: 칸 바탕 없이 여백으로만 구분 */
+:where(html[data-grid='airy']) .grid.month { gap: 4px; }
+:where(html[data-grid='airy']) .cell { border-radius: 12px; background: transparent; }
+:where(html[data-grid='airy']) .dow { padding-bottom: 8px; }
+/* card: 테두리와 옅은 그림자가 있는 카드 칸 */
+:where(html[data-grid='card']) .grid.month { gap: 7px; }
+:where(html[data-grid='card']) .cell { padding: 6px 6px 4px; border-radius: 12px; background: var(--cell-hover); box-shadow: 0 0 0 1px var(--line), 0 2px 6px rgba(0, 0, 0, 0.10); }
+/* outline: 윤곽선만 있는 일정 */
+:where(html[data-chip='outline']) .chip { padding: 0 6px; border: 1px solid color-mix(in srgb, var(--c) 70%, transparent); border-left: 3px solid var(--c); border-radius: 6px; background: transparent; }
+/* compact: 작고 단정한 헤더 */
+html[data-hdr='compact'] .bar { min-height: 32px; }
+:where(html[data-hdr='compact']) .bar h1 { min-width: 0; margin: 0 6px; font-size: 15px; font-weight: 600; }
+:where(html[data-hdr='compact']) .today-btn { display: none; }
+.theme-cat { margin: 12px 0 6px; font-size: 12px; font-weight: 600; color: var(--muted); }
+.sheet.wide .theme-cat:first-of-type { margin-top: 2px; }
+
+/* 오늘 칸의 음력은 틴트된 바탕 위에서도 또렷하게 */
+.cell.today .lunar, .dh.today .lunar { color: var(--ink); }
+
+.chip .t { color: var(--ink); }
+
+/* ───────── 글자 대비 보정: 바탕화면이 비치는 최악의 경우(흰/검은 바탕화면)에도 읽히도록 밝기에 맞춰 한 단계 더 ───────── */
+/* 일요일·토요일 색은 테마 생성 때 색상을 유지한 채 대비를 맞춰 두었으므로 화면에서 다시 희석하지 않는다 */
+:root { --sun-ui: var(--sun); --sat-ui: var(--sat); }
+.cell.sun:not(.today) .num, .cell.hol:not(.today) .num, .dow .sun,
+.dh.sun:not(.today) .dw, .dh.sun:not(.today) .dn, .dh.hol:not(.today) .dw, .dh.hol:not(.today) .dn { color: var(--sun-ui); }
+.cell.sat:not(.today):not(.hol) .num, .dow .sat,
+.dh.sat:not(.today):not(.hol) .dw, .dh.sat:not(.today):not(.hol) .dn { color: var(--sat-ui); }
+.lunar { color: color-mix(in srgb, var(--muted) 55%, var(--ink)); }
+.seg button { color: var(--ink2); }
+
+/* 어두운 테마: 밝은 강조색이 오늘 칸을 너무 밝게 만들지 않도록 색조를 더 옅게 */
+:root[data-dark='1'] .cell.today, :root[data-dark='1'] .dh.today {
+  background: linear-gradient(160deg, color-mix(in srgb, var(--accent) 10%, var(--cell)), color-mix(in srgb, var(--accent) 3%, var(--cell)));
+}
+
+/* ───────── 슬라이딩 스위치 (메뉴·설정의 켜고 끄는 항목) ───────── */
+.switch { position: relative; flex: none; width: 36px; height: 20px; border-radius: 999px; background: color-mix(in srgb, var(--ink) 22%, transparent); box-shadow: inset 0 0 0 1px var(--line); transition: background 0.2s; }
+.switch::after, .card input[type='checkbox']::after { content: ''; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: var(--ink); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35); transition: transform 0.22s cubic-bezier(0.3, 1.3, 0.5, 1), background 0.2s; }
+[aria-checked='true'] > .switch { background: var(--accent); }
+[aria-checked='true'] > .switch::after { transform: translateX(16px); background: var(--on-accent); }
+.menu button.dim { opacity: 0.55; }
+.card input[type='checkbox'] { appearance: none; -webkit-appearance: none; position: relative; flex: none; width: 36px; height: 20px; margin: 2px 0 0; border-radius: 999px; background: color-mix(in srgb, var(--ink) 22%, transparent); box-shadow: inset 0 0 0 1px var(--line); cursor: pointer; transition: background 0.2s; }
+.card input[type='checkbox']:checked { background: var(--accent); }
+.card input[type='checkbox']:checked::after { transform: translateX(16px); background: var(--on-accent); }
+.card input[type='checkbox']:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { .switch, .switch::after, .card input[type='checkbox'], .card input[type='checkbox']::after { transition: none; } }
+
+/* ───────── 날짜 팝업 · 입력 폼: 테마의 색·배경 그림·글꼴을 그대로 쓰는 카드 ───────── */
+html[data-dark='1'] { color-scheme: dark; }
+html[data-dark='0'] { color-scheme: light; }
+.dayov[hidden], .ympop[hidden] { display: none !important; }
+.dayov { position: fixed; inset: 0; z-index: 40; display: flex; align-items: center; justify-content: center; padding: 12px; background: rgba(0, 0, 0, 0); transition: background 0.3s; }
+.dayov.in { background: color-mix(in srgb, #000 42%, transparent); }
+.dvcard { position: relative; display: flex; flex-direction: column; width: min(calc(404px * var(--fs, 1)), 100%); max-height: 100%; overflow: hidden; border: 1px solid color-mix(in srgb, var(--ink) 16%, transparent); border-radius: 18px; background: color-mix(in srgb, var(--panel) 97%, #fff); box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5), 0 0 0 1px color-mix(in srgb, var(--accent) 14%, transparent); }
+.dvcard::before { content: ''; position: absolute; inset: 0; background-image: var(--bg-art, none); background-size: var(--bg-size, cover); background-position: var(--bg-pos, center); background-repeat: var(--bg-repeat, repeat); opacity: 0.45; pointer-events: none; }
+.dvcard::after { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 3px; background: linear-gradient(90deg, var(--accent), transparent 85%); pointer-events: none; z-index: 2; }
+.dvcard > .dv { position: relative; z-index: 1; display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; zoom: var(--fs, 1); }
+.dvcard.fill { position: fixed; inset: 0; width: auto; max-height: none; border: 0; border-radius: 0; box-shadow: none; }
+.dv-head { flex: none; display: flex; align-items: center; gap: 12px; padding: 18px 14px 10px 16px; }
+.dv-head.slim { padding-bottom: 6px; }
+.dv-head.slim .icon-btn { flex: none; }
+.dv-num { flex: none; display: grid; place-items: center; width: 52px; height: 52px; border-radius: 15px; background: color-mix(in srgb, var(--accent) 20%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 42%, transparent); font-family: var(--font-display, inherit); font-size: 24px; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1; }
+.dv-num.sun, .dv-num.hol { color: var(--sun-ui); }
+.dv-num.sat:not(.hol) { color: var(--sat-ui); }
+.dv-text { flex: 1; min-width: 0; }
+.dv-ttl { font-family: var(--font-display, inherit); font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
+.dv-sub { margin-top: 3px; font-size: 12px; line-height: 1.45; color: var(--muted); }
+.dv-sub .off { font-weight: 700; color: var(--sun-ui); }
+.dv-nav { flex: none; display: flex; gap: 4px; }
+.dv-body { flex: 1; min-height: 0; overflow-y: auto; padding: 4px 14px 8px; }
+.dv-foot { flex: none; padding: 8px 14px 14px; }
+.dv-foot .btn { width: 100%; height: 40px; border-radius: 12px; font-size: 14px; }
+.dv-empty { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 26px 8px 22px; text-align: center; color: var(--muted); font-size: 12.5px; }
+.dv-empty b { font-size: 14px; font-weight: 600; color: var(--ink2); }
+.dvcard .item { position: relative; overflow: hidden; margin-bottom: 7px; padding: 10px 12px 10px 17px; border-left: 0; border-radius: 12px; background: color-mix(in srgb, var(--ink) 6%, transparent); }
+.dvcard .item::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--c); }
+.dvcard .item:hover { background: color-mix(in srgb, var(--ink) 12%, transparent); }
+.dvcard .item.ro:hover { background: color-mix(in srgb, var(--ink) 6%, transparent); }
+.dvcard .btn { height: 36px; border-radius: 11px; }
+.dvcard .editor { gap: 12px; padding: 2px 0 6px; }
+.dvcard .editor .field > span { font-size: 11px; font-weight: 600; letter-spacing: 0.04em; color: var(--muted); }
+.dvcard .editor input[type='text'], .dvcard .editor input[type='date'], .dvcard .editor input[type='time'], .dvcard .editor select, .dvcard .editor textarea { padding: 9px 11px; border: 1px solid color-mix(in srgb, var(--ink) 14%, transparent); border-radius: 10px; background: color-mix(in srgb, var(--ink) 7%, transparent); color: var(--ink); transition: border-color 0.15s, box-shadow 0.15s; }
+.dvcard .editor input:focus, .dvcard .editor select:focus, .dvcard .editor textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 26%, transparent); }
+.dvcard .editor input[name='title'] { padding: 11px 12px; border-radius: 12px; font-size: 16px; font-weight: 600; }
+.dvcard .editor .actions { position: sticky; bottom: 0; z-index: 2; margin: 2px -14px -8px; padding: 12px 14px; border-top: 1px solid var(--line); background: color-mix(in srgb, var(--panel) 94%, #fff); }
+.dvcard .editor .btn.primary { min-width: 88px; }
+.dvcard .check { flex-direction: row-reverse; justify-content: space-between; padding: 6px 2px; font-size: 13px; color: var(--ink); }
+.dvcard .check input[type='checkbox'] { appearance: none; -webkit-appearance: none; position: relative; flex: none; width: 36px; height: 20px; margin: 0; border-radius: 999px; background: color-mix(in srgb, var(--ink) 22%, transparent); box-shadow: inset 0 0 0 1px var(--line); cursor: pointer; transition: background 0.2s; }
+.dvcard .check input[type='checkbox']::after { content: ''; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: var(--ink); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35); transition: transform 0.22s cubic-bezier(0.3, 1.3, 0.5, 1), background 0.2s; }
+.dvcard .check input[type='checkbox']:checked { background: var(--accent); }
+.dvcard .check input[type='checkbox']:checked::after { transform: translateX(16px); background: var(--on-accent); }
+.dvcard .sw span { width: 22px; height: 22px; }
+.sheet { border-radius: 18px; border-color: color-mix(in srgb, var(--ink) 16%, transparent); box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5); }
+@media (prefers-reduced-motion: reduce) { .dayov, .dvcard .check input[type='checkbox'], .dvcard .check input[type='checkbox']::after { transition: none; } }
+
+/* ───────── 연·월 바로 가기 ───────── */
+#title { cursor: pointer; }
+#title::after { content: '▾'; margin-left: 5px; font-size: 0.55em; vertical-align: middle; opacity: 0.6; }
+#title:hover::after { opacity: 1; }
+.ympop { position: absolute; z-index: 26; width: calc(236px * var(--fs, 1)); padding: 6px; border: 1px solid color-mix(in srgb, var(--ink) 16%, transparent); border-radius: 16px; background: color-mix(in srgb, var(--panel) 97%, #fff); box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45); animation: ym-in 0.16s ease-out; }
+@keyframes ym-in { from { opacity: 0; transform: translateY(-6px) scale(0.97); } }
+.ympop > * { zoom: var(--fs, 1); }
+.ym-head { display: flex; align-items: center; justify-content: space-between; padding: 4px 4px 8px; }
+.ym-year { display: flex; align-items: baseline; gap: 3px; font-size: 16px; font-weight: 700; }
+.ym-year input { width: 66px; padding: 2px 4px; border: 0; border-bottom: 2px solid var(--line); border-radius: 0; background: transparent; color: var(--ink); font: inherit; text-align: center; font-variant-numeric: tabular-nums; appearance: textfield; -moz-appearance: textfield; }
+.ym-year input:focus { outline: none; border-bottom-color: var(--accent); }
+.ym-year input::-webkit-inner-spin-button, .ym-year input::-webkit-outer-spin-button { appearance: none; margin: 0; }
+.ym-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; padding: 2px 4px 6px; }
+.ym-m { height: 36px; border-radius: 11px; background: color-mix(in srgb, var(--ink) 6%, transparent); font-size: 13px; font-weight: 600; color: var(--ink2); transition: background 0.12s; }
+.ym-m:hover { background: color-mix(in srgb, var(--ink) 14%, transparent); }
+.ym-m.ym-now { box-shadow: inset 0 0 0 1.5px var(--accent); }
+.ym-m.ym-cur { background: var(--accent); color: var(--on-accent); }
+.ym-foot { padding: 2px 4px 4px; }
+.ym-foot .btn { width: 100%; height: 32px; border-radius: 10px; }
+
+/* 일/주/월 버튼 줄은 배경 그림이 비쳐도 읽히도록 테마 바탕색을 살짝 깐다(미니멀 헤더는 밑줄형이라 제외) */
+.seg { background: linear-gradient(color-mix(in srgb, var(--ink) 7%, transparent), color-mix(in srgb, var(--ink) 7%, transparent)), color-mix(in srgb, var(--panel) 72%, transparent); }
+html[data-hdr='minimal'] .seg { background: none; }
+
+.app-version { margin: 4px 16px 72px; text-align: center; color: var(--muted); }
+
+/* 토·일·공휴일은 색에 더해 굵기로도 구분한다 */
+.cell.sun .num, .cell.sat .num, .cell.hol .num, .dow .sun, .dow .sat,
+.dh.sun .dn, .dh.sat .dn, .dh.hol .dn { font-weight: 700; }
